@@ -57,3 +57,9 @@ def get_all_issues():
         issues.append(data)
 
     return issues
+
+def update_issue_status(issue_id, new_status):
+    issue_ref = db.collection("issues").document(issue_id)
+    issue_ref.update({
+        "status": new_status
+    })
