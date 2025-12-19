@@ -17,48 +17,40 @@ model = genai.GenerativeModel("gemini-2.5-flash")
 # -------------------------------
 # 1. Autofill Issue Description
 # -------------------------------
-def generate_issue_description(title: str) -> str:
-    """
-    Generates a formal campus issue description from a short title.
-    Falls back gracefully if AI fails.
-    """
-
-    if not title or not title.strip():
-        return ""
-
+def analyze_issue(topic):
     prompt = f"""
-    You are assisting a college issue reporting system.
+You are an assistant for a college campus issue reporting system.
 
-    Write a clear, formal, and concise description (3–4 sentences)
-    based on the issue title below.
+Analyze the issue title below and return a JSON object with:
+- description (2–3 sentences, student-friendly)
+- category (one of: Infrastructure, Network, Classroom, Hostel, Other)
+- severity (one of: High, Medium, Low)
 
-    Rules:
-    - Do NOT invent technical causes
-    - Keep language neutral and professional
-    - Focus on what is observed, not assumptions
-    - Maximum 80 words
+Rules:
+- Return ONLY valid JSON
+- Do NOT include explanations
+- Do NOT repeat the title in the description
 
-    Issue Title: "{title}"
-    """
+Issue title: {topic}
+"""
 
     try:
         response = model.generate_content(prompt)
-
         text = response.text.strip()
 
-        # Safety fallback
         if not text:
             raise ValueError("Empty AI response")
 
         return text
 
-    except Exception:
-        # Graceful fallback (never block the user)
-        return (
-            f"The issue reported is regarding '{title}'. "
-            "The problem has been observed on campus and requires attention "
-            "from the concerned authorities."
-        )
+    except Exception as e:
+        print("Gemini error:", e)
+        return {
+            "description": f"The issue related to {topic} has been observed on campus and requires attention.",
+            "category": "Other",
+            "severity": "Medium"
+        }
+
 
 
 # -------------------------------
