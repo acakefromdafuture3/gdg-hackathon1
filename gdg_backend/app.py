@@ -4,7 +4,8 @@ from flask_cors import CORS
 from routes.student_routes import student_bp
 from routes.admin_routes import admin_bp
 from routes.auth_routes import auth_bp
-
+from routes.ai_routes import ai_bp
+from routes.ai_routes import ai_bp
 
 def create_app():
     app = Flask(__name__)
@@ -13,6 +14,7 @@ def create_app():
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(student_bp, url_prefix="/student")
     app.register_blueprint(admin_bp, url_prefix="/admin")
+    app.register_blueprint(ai_bp, url_prefix="/ai")
 
     @app.route("/")
     def home():
