@@ -1,6 +1,9 @@
 flask
+google-generativeai
 flask-cors
 firebase-admin
 python-dotenv
 requests
 gunicorn
+
+
