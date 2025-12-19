@@ -49,11 +49,27 @@ def get_issues_by_user(user_id):
 
 def get_all_issues():
     docs = db.collection("issues").stream()
-
     issues = []
+
     for doc in docs:
         data = doc.to_dict()
         data["id"] = doc.id
+
+        user_id = data.get("created_by")
+        reporter = None
+
+        if user_id:
+            user_doc = db.collection("users").document(user_id).get()
+            if user_doc.exists:
+                user = user_doc.to_dict()
+                reporter = {
+                    "name": user.get("name"),
+                    "dept": user.get("dept"),
+                    "year": user.get("year"),
+                    "email": user.get("email"),
+                }
+
+        data["reporter"] = reporter
         issues.append(data)
 
     return issues
