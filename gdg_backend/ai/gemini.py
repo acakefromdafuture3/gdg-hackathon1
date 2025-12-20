@@ -17,7 +17,7 @@ model = genai.GenerativeModel("gemini-2.5-flash")
 # -------------------------------
 # 1. Autofill Issue Description
 # -------------------------------
-def analyze_issue(topic):
+def generate_issue_fields(topic):
     prompt = f"""
 You are an assistant for a college campus issue reporting system.
 
