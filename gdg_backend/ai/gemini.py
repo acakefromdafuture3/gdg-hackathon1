@@ -17,6 +17,9 @@ model = genai.GenerativeModel("gemini-2.5-flash")
 # -------------------------------
 # 1. Autofill Issue Description
 # -------------------------------
+import json
+import re
+
 def generate_issue_fields(topic):
     prompt = f"""
 You are an assistant for a college campus issue reporting system.
@@ -41,14 +44,23 @@ Issue title: {topic}
         if not text:
             raise ValueError("Empty AI response")
 
-        return text
+        # 🧠 Strip code fences if Gemini adds them
+        text = re.sub(r"```json|```", "", text).strip()
+
+        data = json.loads(text)
+
+        return {
+            "description": data.get("description", ""),
+            "category": data.get("category", "Other"),
+            "severity": data.get("severity", "Medium"),
+        }
 
     except Exception as e:
         print("Gemini error:", e)
         return {
-            "description": f"The issue related to {topic} has been observed on campus and requires attention.",
+            "description": f"The issue has been observed on campus and requires attention.",
             "category": "Other",
-            "severity": "Medium"
+            "severity": "Medium",
         }
 
 
