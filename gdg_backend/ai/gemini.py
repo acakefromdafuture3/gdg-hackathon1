@@ -44,10 +44,15 @@ Issue title: {topic}
         if not text:
             raise ValueError("Empty AI response")
 
-        # 🧠 Strip code fences if Gemini adds them
+        # Remove code fences
         text = re.sub(r"```json|```", "", text).strip()
 
-        data = json.loads(text)
+        # 🔥 Extract JSON safely
+        match = re.search(r"\{[\s\S]*\}", text)
+        if not match:
+            raise ValueError("No JSON object found in AI response")
+
+        data = json.loads(match.group())
 
         return {
             "description": data.get("description", ""),
@@ -58,7 +63,7 @@ Issue title: {topic}
     except Exception as e:
         print("Gemini error:", e)
         return {
-            "description": f"The issue has been observed on campus and requires attention.",
+            "description": "The issue has been observed on campus and requires attention.",
             "category": "Other",
             "severity": "Medium",
         }
