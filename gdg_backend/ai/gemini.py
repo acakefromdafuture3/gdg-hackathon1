@@ -42,7 +42,7 @@ Issue title: {topic}
         text = response.text.strip()
 
        if not text:
-            return {
+           return {
         "description": "AI service is temporarily unavailable. Please fill the details manually.",
         "category": "",
         "severity": "",
