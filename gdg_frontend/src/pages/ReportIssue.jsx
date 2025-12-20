@@ -15,6 +15,39 @@ export default function ReportIssue() {
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+const handleAutofill = async () => {
+  try {
+    if (!formData.title.trim()) return;
+
+    setAiLoading(true);
+    const token = localStorage.getItem("token");
+
+    const res = await api.post(
+      "/ai/generate-issue-fields",
+      { topic: formData.title },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const { description, category, severity } = res.data;
+
+    setFormData(prev => ({
+      ...prev,
+      description: description || prev.description,
+      category: category || prev.category,
+      severity: severity || prev.severity,
+    }));
+  } catch (err) {
+    alert("AI could not generate issue details");
+  } finally {
+    setAiLoading(false);
+  }
+};
+
 
   const handleChange = (e) => {
     setFormData({
@@ -117,6 +150,36 @@ export default function ReportIssue() {
               placeholder="Short summary of the issue"
               className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
+<button
+  type="button"
+  onClick={handleAutofill}
+  disabled={!formData.title || aiLoading}
+  className={`
+    mt-3
+    inline-flex items-center gap-2
+    px-4 py-2
+    rounded-lg
+    text-sm font-medium
+    transition-all
+    disabled:opacity-50 disabled:cursor-not-allowed
+
+    bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500
+    text-white
+    hover:brightness-110
+    shadow-sm
+    focus:outline-none
+    focus:ring-2 focus:ring-purple-400
+  `}
+>
+  <span className="text-base">✨</span>
+  {aiLoading ? "Analyzing issue..." : "Generate details with AI"}
+</button>
+<p className="mt-1 text-xs text-slate-500">
+  AI will suggest a description, category, and severity
+</p>
+
+
+
           </div>
 
           {/* Description */}
