@@ -10,11 +10,11 @@ ai_bp = Blueprint("ai", __name__)
 
 
 # --------------------------------
-# 1. Autofill Description
+# 1. Autofill Description + Fields
 # --------------------------------
 @ai_bp.route("/generate-issue-fields", methods=["POST"])
 @require_auth
-def generate_issue_fields():
+def generate_issue_fields_route():
     data = request.get_json()
 
     if not data:
@@ -27,7 +27,7 @@ def generate_issue_fields():
 
     ai_result = generate_issue_fields(topic)
 
-    return jsonify(ai_result),200
+    return jsonify(ai_result), 200
 
 
 # --------------------------------
@@ -48,9 +48,7 @@ def summarize():
 
     summary = summarize_issue(description)
 
-    return jsonify({
-        "summary": summary
-    }), 200
+    return jsonify({"summary": summary}), 200
 
 
 # --------------------------------
@@ -73,8 +71,6 @@ def check_duplicate():
     if not isinstance(existing_issues, list):
         return jsonify({"error": "existing_issues must be a list"}), 400
 
-    is_duplicate = is_duplicate_issue(new_issue, existing_issues)
+    duplicate = is_duplicate_issue(new_issue, existing_issues)
 
-    return jsonify({
-        "duplicate": is_duplicate
-    }), 200
+    return jsonify({"duplicate": duplicate}), 200
