@@ -153,8 +153,8 @@ All AI calls are explicit, optional, and controlled to stay within free-tier lim
 
 <h2>👥 Collaborators</h2>
 <ul>
-  <li>👨‍💻 Author 1 – <i>(You)</i></li>
-  <li>👩‍💻 Author 2 – <i>(Your Teammate)</i></li>
+  <li>👨‍💻 Author 1 – <i>Ritankar Bose</i></li>
+  <li>👩‍💻 Author 2 – <i>Rani Bhattacharjee</i></li>
 </ul>
 
 <p>
