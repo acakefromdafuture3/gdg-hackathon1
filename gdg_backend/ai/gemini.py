@@ -1,5 +1,8 @@
 import os
+import json
+import re
 import google.generativeai as genai
+from typing import List
 
 # -------------------------------
 # Gemini Configuration
@@ -15,12 +18,9 @@ model = genai.GenerativeModel("gemini-2.5-flash")
 
 
 # -------------------------------
-# 1. Autofill Issue Description
+# 1. Autofill Issue Fields
 # -------------------------------
-import json
-import re
-
-def generate_issue_fields(topic):
+def generate_issue_fields(topic: str) -> dict:
     prompt = f"""
 You are an assistant for a college campus issue reporting system.
 
@@ -41,17 +41,17 @@ Issue title: {topic}
         response = model.generate_content(prompt)
         text = response.text.strip()
 
-       if not text:
-           return {
-        "description": "AI service is temporarily unavailable. Please fill the details manually.",
-        "category": "",
-        "severity": "",
-        }
+        if not text:
+            return {
+                "description": "AI service is temporarily unavailable. Please fill the details manually.",
+                "category": "",
+                "severity": "",
+            }
 
-        # Remove code fences
+        # Remove markdown code fences if present
         text = re.sub(r"```json|```", "", text).strip()
 
-        # 🔥 Extract JSON safely
+        # Extract JSON safely
         match = re.search(r"\{[\s\S]*\}", text)
         if not match:
             raise ValueError("No JSON object found in AI response")
@@ -73,7 +73,6 @@ Issue title: {topic}
         }
 
 
-
 # -------------------------------
 # 2. One-line Issue Summary (Admin)
 # -------------------------------
@@ -85,7 +84,7 @@ def summarize_issue(description: str) -> str:
     if not description or not description.strip():
         return ""
 
-   prompt = f"""
+    prompt = f"""
 You are assisting a college administrator.
 
 Given the issue description below, generate a SINGLE concise sentence
@@ -107,13 +106,13 @@ Issue Description:
         return response.text.strip()
 
     except Exception:
-        return description.split(".")[0] + "."
+        return description.split(".")[0].strip() + "."
 
 
 # -------------------------------
 # 3. Duplicate Issue Detection
 # -------------------------------
-def is_duplicate_issue(new_issue: str, existing_issues: list[str]) -> bool:
+def is_duplicate_issue(new_issue: str, existing_issues: List[str]) -> bool:
     """
     Checks whether a new issue is semantically similar
     to existing unresolved issues.
@@ -127,17 +126,17 @@ def is_duplicate_issue(new_issue: str, existing_issues: list[str]) -> bool:
     )
 
     prompt = f"""
-    Determine whether the NEW issue below is a duplicate of any
-    existing issues.
+Determine whether the NEW issue below is a duplicate of any
+existing issues.
 
-    Respond with ONLY "YES" or "NO".
+Respond with ONLY "YES" or "NO".
 
-    Existing Issues:
-    {issues_text}
+Existing Issues:
+{issues_text}
 
-    New Issue:
-    "{new_issue}"
-    """
+New Issue:
+"{new_issue}"
+"""
 
     try:
         response = model.generate_content(prompt)
