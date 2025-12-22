@@ -93,6 +93,27 @@ def get_recent_issues(user_id, days=7, limit=10):
         issues.append(data)
 
     return issues
+def get_issue_stats_by_user(user_id):
+    docs = db.collection("issues").where("created_by", "==", user_id).stream()
+
+    total = 0
+    pending = 0
+    resolved = 0
+
+    for doc in docs:
+        total += 1
+        status = doc.to_dict().get("status")
+
+        if status == "Pending":
+            pending += 1
+        elif status == "Resolved":
+            resolved += 1
+
+    return {
+        "total": total,
+        "pending": pending,
+        "resolved": resolved
+    }
 
 def update_issue_status(issue_id, new_status):
     issue_ref = db.collection("issues").document(issue_id)
