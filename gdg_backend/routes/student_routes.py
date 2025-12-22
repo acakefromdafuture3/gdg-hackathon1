@@ -37,5 +37,6 @@ def my_issues():
 @student_bp.route("/recent-issues", methods=["GET"])
 @require_auth
 def recent_issues():
-    issues = get_recent_issues(days=7, limit=10)
+    user_id = request.user["uid"]
+    issues = get_recent_issues(user_id)
     return jsonify(issues), 200
