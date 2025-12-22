@@ -3,51 +3,58 @@ import { useEffect, useState } from "react";
 import api from "../api/api";
 
 export default function StudentDashboard() {
-const [myIssues, setMyIssues] = useState([]);
-const [recentIssues, setRecentIssues] = useState([]);
+  const [myIssues, setMyIssues] = useState([]);
+  const [recentIssues, setRecentIssues] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showMyIssues, setShowMyIssues] = useState(false);
+  const [myIssuesLoading, setMyIssuesLoading] = useState(false);
 
-useEffect(() => {
-  const fetchData = async () => {
+  useEffect(() => {
+    const fetchRecentIssues = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) throw new Error("User not authenticated");
+
+        const res = await api.get("/student/recent-issues");
+        setRecentIssues(res.data);
+      } catch (err) {
+        setError(
+          err.response?.data?.error ||
+          "Failed to load recent issues."
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRecentIssues();
+  }, []);
+
+  const loadMyIssues = async () => {
+    if (myIssues.length > 0) return;
+
     try {
-      const token = localStorage.getItem("token");
-      if (!token) throw new Error("User not authenticated");
-
-      const [myIssuesRes, recentIssuesRes] = await Promise.all([
-        api.get("/student/my-issues", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        api.get("/student/recent-issues", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-      ]);
-
-      setMyIssues(myIssuesRes.data);
-      setRecentIssues(recentIssuesRes.data);
-
+      setMyIssuesLoading(true);
+      const res = await api.get("/student/my-issues");
+      setMyIssues(res.data);
     } catch (err) {
       setError(
         err.response?.data?.error ||
-        "Failed to load dashboard data."
+        "Failed to load your issues."
       );
     } finally {
-      setLoading(false);
+      setMyIssuesLoading(false);
     }
   };
 
-  fetchData();
-}, []);
-
-
-  // Derived stats
-const totalIssues = myIssues.length;
-const pendingIssues = myIssues.filter(
-  (issue) => issue.status === "Pending"
-).length;
-const resolvedIssues = myIssues.filter(
-  (issue) => issue.status === "Resolved"
-).length;
+  const totalIssues = myIssues.length;
+  const pendingIssues = myIssues.filter(
+    (issue) => issue.status === "Pending"
+  ).length;
+  const resolvedIssues = myIssues.filter(
+    (issue) => issue.status === "Resolved"
+  ).length;
 
   if (loading) {
     return (
@@ -77,30 +84,20 @@ const resolvedIssues = myIssues.filter(
         </p>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard title="Total Issues" value={totalIssues} />
-        <StatCard
-          title="Pending"
-          value={pendingIssues}
-          color="text-yellow-600"
-        />
-        <StatCard
-          title="Resolved"
-          value={resolvedIssues}
-          color="text-green-600"
-        />
+        <StatCard title="Pending" value={pendingIssues} color="text-yellow-600" />
+        <StatCard title="Resolved" value={resolvedIssues} color="text-green-600" />
       </div>
 
       {/* Action Button */}
-      <div>
-        <Link
-          to="/student/report"
-          className="inline-block bg-blue-600 text-white px-5 py-2 rounded-lg font-medium hover:bg-blue-700 transition"
-        >
-          + Report New Issue
-        </Link>
-      </div>
+      <Link
+        to="/student/report"
+        className="inline-block bg-blue-600 text-white px-5 py-2 rounded-lg font-medium hover:bg-blue-700 transition"
+      >
+        + Report New Issue
+      </Link>
 
       {/* Recent Issues */}
       <div className="bg-white rounded-xl shadow p-6">
@@ -110,22 +107,18 @@ const resolvedIssues = myIssues.filter(
 
         {recentIssues.length === 0 ? (
           <p className="text-slate-500">
-              No issues reported in the last 7 days.
+            No issues reported in the last 7 days.
           </p>
         ) : (
           <div className="space-y-3">
-            {recentIssues.map((issue, index) => (
+            {recentIssues.map((issue) => (
               <div
-                key={index}
+                key={issue.id}
                 className="flex items-center justify-between border border-slate-200 rounded-lg px-4 py-3"
               >
                 <div>
-                  <p className="font-medium text-slate-800">
-                    {issue.title}
-                  </p>
-                  <p className="text-sm text-slate-500">
-                    {issue.category}
-                  </p>
+                  <p className="font-medium text-slate-800">{issue.title}</p>
+                  <p className="text-sm text-slate-500">{issue.category}</p>
                 </div>
 
                 <span
@@ -139,6 +132,57 @@ const resolvedIssues = myIssues.filter(
                 </span>
               </div>
             ))}
+          </div>
+        )}
+      </div>
+
+      {/* My Issues */}
+      <div className="bg-white rounded-xl shadow p-6">
+        <button
+          onClick={() => {
+            setShowMyIssues((prev) => !prev);
+            if (!showMyIssues) loadMyIssues();
+          }}
+          className="flex items-center justify-between w-full text-left"
+        >
+          <h2 className="text-lg font-semibold text-slate-800">My Issues</h2>
+          <span className="text-slate-500 text-xl">
+            {showMyIssues ? "−" : "+"}
+          </span>
+        </button>
+
+        {showMyIssues && (
+          <div className="mt-4 space-y-3">
+            {myIssuesLoading ? (
+              <p className="text-slate-500">Loading your issues...</p>
+            ) : myIssues.length === 0 ? (
+              <p className="text-slate-500">
+                You haven’t reported any issues yet.
+              </p>
+            ) : (
+              myIssues.map((issue) => (
+                <div
+                  key={issue.id}
+                  className="border border-slate-200 rounded-lg px-4 py-3"
+                >
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="font-medium text-slate-800">{issue.title}</p>
+                      <p className="text-sm text-slate-500">{issue.category}</p>
+                    </div>
+                    <span
+                      className={`text-sm font-medium px-3 py-1 rounded-full ${
+                        issue.status === "Resolved"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-yellow-100 text-yellow-700"
+                      }`}
+                    >
+                      {issue.status}
+                    </span>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         )}
       </div>
