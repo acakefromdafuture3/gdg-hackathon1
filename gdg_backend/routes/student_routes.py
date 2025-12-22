@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from firebase.auth import require_auth
 from firebase.database import create_issue
 from firebase.database import get_issues_by_user
+from firebase.database import get_recent_issues
 
 student_bp = Blueprint("student", __name__)
 
@@ -31,4 +32,10 @@ def report_issue():
 def my_issues():
     user_id = request.user["uid"]
     issues = get_issues_by_user(user_id)
+    return jsonify(issues), 200
+
+@student_bp.route("/recent-issues", methods=["GET"])
+@require_auth
+def recent_issues():
+    issues = get_recent_issues(days=7, limit=10)
     return jsonify(issues), 200
