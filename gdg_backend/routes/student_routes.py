@@ -4,6 +4,7 @@ from firebase.database import create_issue
 from firebase.database import get_issues_by_user
 from firebase.database import get_recent_issues
 from firebase.init import db
+from firebase.database import get_issue_stats_by_user
 
 student_bp = Blueprint("student", __name__)
 
@@ -59,3 +60,9 @@ def get_issue_detail(issue_id):
 
     issue["id"] = issue_doc.id
     return jsonify(issue), 200
+@student_bp.route("/issue-stats", methods=["GET"])
+@require_auth
+def issue_stats():
+    user_id = request.user["uid"]
+    stats = get_issue_stats_by_user(user_id)
+    return jsonify(stats), 200
