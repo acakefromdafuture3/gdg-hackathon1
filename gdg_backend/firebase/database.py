@@ -73,11 +73,12 @@ def get_all_issues():
         issues.append(data)
 
     return issues
-def get_recent_issues(days=7, limit=10):
+def get_recent_issues(user_id, days=7, limit=10):
     cutoff_date = datetime.utcnow() - timedelta(days=days)
 
     issues_ref = (
         db.collection("issues")
+        .where("created_by", "==", user_id)
         .where("created_at", ">=", cutoff_date)
         .order_by("created_at", direction="DESCENDING")
         .limit(limit)
@@ -92,6 +93,7 @@ def get_recent_issues(days=7, limit=10):
         issues.append(data)
 
     return issues
+
 def update_issue_status(issue_id, new_status):
     issue_ref = db.collection("issues").document(issue_id)
     issue_ref.update({
