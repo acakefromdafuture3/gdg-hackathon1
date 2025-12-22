@@ -1,5 +1,5 @@
 from firebase.init import db
-from datetime import datetime
+from datetime import datetime,timedelta
 
 
 def create_user_profile(uid, data):
@@ -73,7 +73,25 @@ def get_all_issues():
         issues.append(data)
 
     return issues
+def get_recent_issues(days=7, limit=10):
+    cutoff_date = datetime.utcnow() - timedelta(days=days)
 
+    issues_ref = (
+        db.collection("issues")
+        .where("created_at", ">=", cutoff_date)
+        .order_by("created_at", direction="DESCENDING")
+        .limit(limit)
+    )
+
+    docs = issues_ref.stream()
+    issues = []
+
+    for doc in docs:
+        data = doc.to_dict()
+        data["id"] = doc.id
+        issues.append(data)
+
+    return issues
 def update_issue_status(issue_id, new_status):
     issue_ref = db.collection("issues").document(issue_id)
     issue_ref.update({
