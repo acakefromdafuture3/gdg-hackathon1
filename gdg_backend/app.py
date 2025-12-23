@@ -5,11 +5,19 @@ from routes.student_routes import student_bp
 from routes.admin_routes import admin_bp
 from routes.auth_routes import auth_bp
 from routes.ai_routes import ai_bp
-from routes.ai_routes import ai_bp
+
 
 def create_app():
     app = Flask(__name__)
-    CORS(app)
+
+    CORS(
+        app,
+        resources={r"/*": {"origins": [
+            "https://gdg-hackathon-32wi.vercel.app"
+        ]}},
+        supports_credentials=True,
+        allow_headers=["Content-Type", "Authorization"]
+    )
 
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(student_bp, url_prefix="/student")
