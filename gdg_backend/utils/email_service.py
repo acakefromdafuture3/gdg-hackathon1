@@ -1,53 +1,41 @@
 import os
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
 
-# ---------------- ENV VARIABLES ----------------
 
-SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")
-SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
+SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
+SENDER_EMAIL = os.getenv("SENDGRID_FROM_EMAIL")
 
-SENDER_EMAIL = os.getenv("SENDER_EMAIL")
-SENDER_PASSWORD = os.getenv("SENDER_PASSWORD")
-
-# Optional safety check
-if not SENDER_EMAIL or not SENDER_PASSWORD:
-    print("❌ SMTP credentials missing in environment variables")
-
-# ---------------- EMAIL FUNCTION ----------------
 
 def send_email(to_emails, subject, html_content):
     try:
-        print("📧 send_email() CALLED")
-        print("➡️ To emails:", to_emails)
-        print("🔌 Connecting to SMTP:", SMTP_SERVER, SMTP_PORT)
-
-        if not to_emails:
-            print("⚠️ No recipients, skipping email")
+        if not SENDGRID_API_KEY:
+            print("❌ SENDGRID_API_KEY missing")
             return
 
-        msg = MIMEMultipart()
-        msg["From"] = SENDER_EMAIL
-        msg["To"] = ", ".join(to_emails)
-        msg["Subject"] = subject
-        msg.attach(MIMEText(html_content, "html"))
+        if not SENDER_EMAIL:
+            print("❌ SENDGRID_FROM_EMAIL missing")
+            return
 
-        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT, timeout=20) as server:
-            server.set_debuglevel(1)
-            server.starttls()
-            print("🔐 TLS started")
+        if not to_emails:
+            print("⚠️ No recipients provided")
+            return
 
-            server.login(SENDER_EMAIL, SENDER_PASSWORD)
-            print("✅ SMTP login successful")
+        print("📧 Sending email via SendGrid")
+        print("➡️ To:", to_emails)
 
-            server.sendmail(
-                SENDER_EMAIL,
-                to_emails,
-                msg.as_string()
-            )
+        message = Mail(
+            from_email=SENDER_EMAIL,
+            to_emails=to_emails,
+            subject=subject,
+            html_content=html_content
+        )
 
-            print("📨 Email sent successfully")
+        sg = SendGridAPIClient(SENDGRID_API_KEY)
+        response = sg.send(message)
+
+        print("✅ Email sent successfully")
+        print("📨 Status:", response.status_code)
 
     except Exception as e:
-        print("❌ EMAIL FAILED:", repr(e))
+        print("❌ SENDGRID EMAIL FAILED:", str(e))
