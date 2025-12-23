@@ -1,6 +1,18 @@
 import { useEffect, useState } from "react";
 import api from "../api/api";
 import IssueAI from "../components/IssueAI"
+const formatDate = (ts) => {
+  if (!ts) return "";
+  const date = ts.seconds
+    ? new Date(ts.seconds * 1000)
+    : new Date(ts);
+  return date.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+};
+
 export default function AdminDashboard() {
   const [issues, setIssues] = useState([]);
   const [selectedIssue, setSelectedIssue] = useState(null);
@@ -62,12 +74,15 @@ export default function AdminDashboard() {
 
     return 0;
   });
+const isClosed = (status) =>
+  status === "Resolved" || status === "Rejected";
+
 const activeIssues = processedIssues.filter(
-  issue => issue.status !== "Resolved"
+  issue => !isClosed(issue.status)
 );
 
 const resolvedIssues = processedIssues.filter(
-  issue => issue.status === "Resolved"
+  issue => isClosed(issue.status)
 );
 
 
@@ -120,6 +135,7 @@ const resolvedIssues = processedIssues.filter(
     <option value="Pending">Pending</option>
     <option value="In Progress">In Progress</option>
     <option value="Resolved">Resolved</option>
+    <option value="Rejected">Rejected</option>
   </select>
 
   {/* Severity Filter */}
@@ -192,7 +208,7 @@ const resolvedIssues = processedIssues.filter(
                 </td>
 
                 <td className="px-4 py-3">
-                  <StatusBadge value={issue.status} />
+                  <StatusBadge issue={issue} />
                 </td>
 
                 <td className="px-4 py-3 text-slate-600 text-sm">
@@ -321,22 +337,48 @@ function SeverityBadge({ value }) {
   );
 }
 
-function StatusBadge({ value }) {
-  const map = {
-    Pending: "bg-yellow-100 text-yellow-700",
-    "In Progress": "bg-blue-100 text-blue-700",
-    Resolved: "bg-green-100 text-green-700",
-  };
+function StatusBadge({ issue }) {
+  const base =
+    "px-3 py-1 rounded-full text-xs font-medium inline-block";
+
+  if (issue.status === "Resolved") {
+    return (
+      <span className={`${base} bg-green-100 text-green-700`}>
+        Resolved on {formatDate(issue.resolved_at)}
+      </span>
+    );
+  }
+
+  if (issue.status === "Rejected") {
+    return (
+      <span className={`${base} bg-red-100 text-red-700`}>
+        Rejected on {formatDate(issue.rejected_at)}
+      </span>
+    );
+  }
+
+  if (issue.status === "In Progress") {
+    return (
+      <span className={`${base} bg-blue-100 text-blue-700`}>
+        In Progress
+      </span>
+    );
+  }
+
   return (
-    <span className={`px-3 py-1 rounded-full text-xs ${map[value]}`}>
-      {value}
+    <span className={`${base} bg-yellow-100 text-yellow-700`}>
+      Pending
     </span>
   );
 }
 
+
 function IssueModal({ issue, allIssues, onClose, setIssues }) {
   const [status, setStatus] = useState(issue.status);
   const [updating, setUpdating] = useState(false);
+
+  const isClosed =
+    issue.status === "Resolved" || issue.status === "Rejected";
 
   const handleUpdate = async () => {
     try {
@@ -350,7 +392,18 @@ function IssueModal({ issue, allIssues, onClose, setIssues }) {
       );
 
       setIssues(prev =>
-        prev.map(i => (i.id === issue.id ? { ...i, status } : i))
+        prev.map(i =>
+          i.id === issue.id
+            ? {
+                ...i,
+                status,
+                resolved_at:
+                  status === "Resolved" ? new Date() : i.resolved_at,
+                rejected_at:
+                  status === "Rejected" ? new Date() : i.rejected_at,
+              }
+            : i
+        )
       );
 
       onClose();
@@ -364,7 +417,7 @@ function IssueModal({ issue, allIssues, onClose, setIssues }) {
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
       <div className="bg-white w-full max-w-lg rounded-xl shadow-lg p-6 relative
-                max-h-[90vh] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent">
+        max-h-[90vh] overflow-y-auto">
 
         <button
           onClick={onClose}
@@ -381,7 +434,17 @@ function IssueModal({ issue, allIssues, onClose, setIssues }) {
           <p><b>Category:</b> {issue.category}</p>
           <p><b>Severity:</b> {issue.severity}</p>
           <p><b>Location:</b> {issue.location}</p>
-          <p><b>Current Status:</b> {issue.status}</p>
+
+          <p>
+            <b>Status:</b>{" "}
+            {issue.status === "Resolved" &&
+              `Resolved on ${formatDate(issue.resolved_at)}`}
+            {issue.status === "Rejected" &&
+              `Rejected on ${formatDate(issue.rejected_at)}`}
+            {(issue.status === "Pending" ||
+              issue.status === "In Progress") &&
+              issue.status}
+          </p>
         </div>
 
         <hr className="my-4" />
@@ -398,28 +461,35 @@ function IssueModal({ issue, allIssues, onClose, setIssues }) {
 
         <hr className="my-4" />
 
-        <div>
-          <h3 className="font-semibold mb-2">Update Status</h3>
-          {["Pending", "In Progress", "Resolved"].map(s => (
-            <label key={s} className="flex items-center gap-2 text-sm">
-              <input
-                type="radio"
-                checked={status === s}
-                onChange={() => setStatus(s)}
-              />
-              {s}
-            </label>
-          ))}
-        </div>
+        {!isClosed ? (
+          <div>
+            <h3 className="font-semibold mb-2">Update Status</h3>
+            {["Pending", "In Progress", "Resolved", "Rejected"].map(s => (
+              <label key={s} className="flex items-center gap-2 text-sm">
+                <input
+                  type="radio"
+                  checked={status === s}
+                  onChange={() => setStatus(s)}
+                />
+                {s}
+              </label>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-slate-500 italic">
+            This issue is closed and cannot be updated.
+          </p>
+        )}
 
         <div className="flex justify-end gap-3 mt-6">
           <button onClick={onClose} className="px-4 py-2 border rounded-lg">
-            Cancel
+            Close
           </button>
           <button
             onClick={handleUpdate}
-            disabled={updating}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+            disabled={updating || isClosed}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg
+              hover:bg-blue-700 disabled:opacity-50"
           >
             {updating ? "Updating..." : "Update Status"}
           </button>
