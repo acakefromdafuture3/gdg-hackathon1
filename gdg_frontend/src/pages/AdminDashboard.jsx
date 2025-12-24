@@ -377,43 +377,58 @@ function StatusBadge({ issue }) {
 function IssueModal({ issue, allIssues, onClose, setIssues }) {
   const [status, setStatus] = useState(issue.status);
   const [updating, setUpdating] = useState(false);
+  const [adminNote, setAdminNote] = useState("");
+  const [adminMessage, setAdminMessage] = useState("");
+
 
   const isClosed =
     issue.status === "Resolved" || issue.status === "Rejected";
 
-  const handleUpdate = async () => {
-    try {
-      setUpdating(true);
-      const token = localStorage.getItem("token");
+const handleUpdate = async () => {
+  try {
+    setUpdating(true);
+    const token = localStorage.getItem("token");
 
+    if (status === "Resolved" || status === "Rejected") {
+      if (!adminNote || !adminMessage) {
+        alert("Please fill both admin note and student message.");
+        return;
+      }
+
+      await api.put(
+        "/admin/finalize",
+        {
+          issue_id: issue.id,
+          status,
+          admin_note: adminNote,
+          admin_message: adminMessage,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+    } else {
       await api.put(
         "/admin/update-status",
         { issue_id: issue.id, status },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
-      setIssues(prev =>
-        prev.map(i =>
-          i.id === issue.id
-            ? {
-                ...i,
-                status,
-                resolved_at:
-                  status === "Resolved" ? new Date() : i.resolved_at,
-                rejected_at:
-                  status === "Rejected" ? new Date() : i.rejected_at,
-              }
-            : i
-        )
-      );
-
-      onClose();
-    } catch {
-      alert("Failed to update status");
-    } finally {
-      setUpdating(false);
     }
-  };
+
+    setIssues(prev =>
+      prev.map(i =>
+        i.id === issue.id
+          ? { ...i, status }
+          : i
+      )
+    );
+
+    onClose();
+  } catch {
+    alert("Failed to update issue");
+  } finally {
+    setUpdating(false);
+  }
+};
+
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
@@ -464,25 +479,58 @@ function IssueModal({ issue, allIssues, onClose, setIssues }) {
 
         <hr className="my-4" />
 
-        {!isClosed ? (
-          <div>
-            <h3 className="font-semibold mb-2">Update Status</h3>
-            {["Pending", "In Progress", "Resolved", "Rejected"].map(s => (
-              <label key={s} className="flex items-center gap-2 text-sm">
-                <input
-                  type="radio"
-                  checked={status === s}
-                  onChange={() => setStatus(s)}
-                />
-                {s}
-              </label>
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-slate-500 italic">
-            This issue is closed and cannot be updated.
-          </p>
-        )}
+    {!isClosed ? (
+  <div className="space-y-4">
+    <h3 className="font-semibold">Update Status</h3>
+
+    {["Pending", "In Progress", "Resolved", "Rejected"].map(s => (
+      <label key={s} className="flex items-center gap-2 text-sm">
+        <input
+          type="radio"
+          checked={status === s}
+          onChange={() => setStatus(s)}
+        />
+        {s}
+      </label>
+    ))}
+
+    {(status === "Resolved" || status === "Rejected") && (
+      <>
+        <hr className="my-4" />
+
+        <div>
+          <label className="text-sm font-medium">
+            Admin Note (internal)
+          </label>
+          <textarea
+            value={adminNote}
+            onChange={(e) => setAdminNote(e.target.value)}
+            className="w-full mt-1 p-2 border rounded-lg text-sm"
+            rows={3}
+            placeholder="Internal note for admins..."
+          />
+        </div>
+
+        <div>
+          <label className="text-sm font-medium">
+            Message to Student
+          </label>
+          <textarea
+            value={adminMessage}
+            onChange={(e) => setAdminMessage(e.target.value)}
+            className="w-full mt-1 p-2 border rounded-lg text-sm"
+            rows={4}
+            placeholder="This message will be emailed to the student..."
+          />
+        </div>
+      </>
+    )}
+  </div>
+) : (
+  <p className="text-sm text-slate-500 italic">
+    This issue is closed and cannot be updated.
+  </p>
+)}
 
         <div className="flex justify-end gap-3 mt-6">
           <button onClick={onClose} className="px-4 py-2 border rounded-lg">

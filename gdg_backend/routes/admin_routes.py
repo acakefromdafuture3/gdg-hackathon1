@@ -53,14 +53,15 @@ def finalize_issue_route():
     issue_id = data.get("issue_id")
     final_status = data.get("status")
     admin_note = data.get("admin_note")
+    admin_message = data.get("admin_message")
 
-    if not issue_id or not final_status or not admin_note:
+    if not issue_id or not final_status or not admin_note or not admin_message:
         return jsonify({
-            "error": "issue_id, status and admin_note are required"
+            "error": "issue_id, status, admin_note and admin_message are required"
         }), 400
 
     try:
-        finalize_issue(issue_id, final_status, admin_note)
+        finalize_issue(issue_id, final_status, admin_note, admin_message)
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     except PermissionError as e:
