@@ -7,6 +7,7 @@ from firebase.database import (
     get_student_email_by_issue,
     finalize_issue
 )
+from firebase.init import db
 from utils.email_service import send_email
 from utils.email_templates import student_issue_finalized_email
 admin_bp = Blueprint("admin", __name__)
@@ -57,7 +58,7 @@ def finalize_issue_route():
     admin_note = data.get("admin_note")
     admin_message = data.get("admin_message")
 
-    if not issue_id or not final_status or not admin_message:
+    if not issue_id or not final_status or not admin_message or not admin_note:
         return jsonify({
             "error": "issue_id, status and admin_message are required"
         }), 400
