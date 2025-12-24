@@ -34,8 +34,9 @@ export default function Register() {
       return setError("Department is required.");
     }
 
-    if (!formData.email.endsWith("@stcet.ac.in")) {
-      return setError("Please use your STCET college email.");
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+      return setError("Please enter a valid email address.");
     }
 
     if (formData.password.length < 8) {
@@ -150,14 +151,14 @@ export default function Register() {
             {/* Email */}
             <div>
               <label className="block text-sm font-medium text-slate-700">
-                College Email
+                Email Address
               </label>
               <input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="yourname@stcet.ac.in"
+                placeholder="yourname@example.com"
                 className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -199,7 +200,7 @@ export default function Register() {
           </p>
 
           <p className="text-xs text-slate-400 text-center mt-6">
-            Registration is restricted to institutional users
+            &copy; 2025 Campus Issue Portal. All rights reserved.
           </p>
         </div>
       </div>
