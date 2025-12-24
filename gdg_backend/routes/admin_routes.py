@@ -4,9 +4,11 @@ from utils.role_guard import role_required
 from firebase.database import (
     get_all_issues,
     update_issue_status,
+    get_student_email_by_issue,
     finalize_issue
 )
-
+from utils.email_service import send_email
+from utils.email_templates import student_issue_finalized_email
 admin_bp = Blueprint("admin", __name__)
 
 # -------------------------------
@@ -55,13 +57,36 @@ def finalize_issue_route():
     admin_note = data.get("admin_note")
     admin_message = data.get("admin_message")
 
-    if not issue_id or not final_status or not admin_note or not admin_message:
+    if not issue_id or not final_status or not admin_message:
         return jsonify({
-            "error": "issue_id, status, admin_note and admin_message are required"
+            "error": "issue_id, status and admin_message are required"
         }), 400
 
     try:
-        finalize_issue(issue_id, final_status, admin_note, admin_message)
+        finalize_issue(
+            issue_id,
+            final_status,
+            admin_note=admin_note,
+            admin_message=admin_message
+        )
+
+        # 📧 Email student
+        student_email = get_student_email_by_issue(issue_id)
+        if student_email:
+            issue_doc = db.collection("issues").document(issue_id).get()
+            issue_data = issue_doc.to_dict()
+
+            email_html = student_issue_finalized_email(
+                issue_data,
+                admin_message
+            )
+
+            send_email(
+                to_emails=[student_email],
+                subject="Update on Your Campus Issue",
+                html_content=email_html
+            )
+
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     except PermissionError as e:
