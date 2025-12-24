@@ -7,6 +7,9 @@ export default function IssueAI({ issue, allIssues }) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+   if (issue.status === "Resolved" || issue.status === "Rejected") {
+    return;
+  }
     generateSummary();
     checkDuplicate();
     // eslint-disable-next-line
@@ -35,9 +38,14 @@ export default function IssueAI({ issue, allIssues }) {
     try {
       const token = localStorage.getItem("token");
 
-      const unresolved = allIssues
-        .filter(i => i.status !== "Resolved" && i.id !== issue.id)
-        .map(i => i.title);
+   const unresolved = allIssues
+  .filter(
+    i =>
+      i.id !== issue.id &&
+      i.status !== "Resolved" &&
+      i.status !== "Rejected"
+  )
+  .map(i => i.title);
 
       const res = await api.post(
         "/ai/check-duplicate",
