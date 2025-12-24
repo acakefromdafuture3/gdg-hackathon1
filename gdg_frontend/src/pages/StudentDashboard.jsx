@@ -240,6 +240,20 @@ export default function StudentDashboard() {
                 </div>
 
                 <StatusBadge status={selectedIssue.status} />
+                {selectedIssue.admin_message && (
+  <>
+    <hr className="my-4" />
+
+    <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
+      <p className="text-sm font-semibold text-blue-700 mb-1">
+        Message from Administration
+      </p>
+      <p className="text-sm text-slate-700 whitespace-pre-line">
+        {selectedIssue.admin_message}
+      </p>
+    </div>
+  </>
+)}
               </div>
             )}
           </div>

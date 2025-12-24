@@ -527,9 +527,33 @@ const handleUpdate = async () => {
     )}
   </div>
 ) : (
-  <p className="text-sm text-slate-500 italic">
-    This issue is closed and cannot be updated.
-  </p>
+  <>
+    {issue.admin_note && (
+      <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 mb-4">
+        <p className="text-sm font-semibold text-slate-700 mb-1">
+          📝 Internal Admin Note
+        </p>
+        <p className="text-sm text-slate-600 whitespace-pre-wrap">
+          {issue.admin_note}
+        </p>
+      </div>
+    )}
+
+    {issue.admin_message && (
+      <div className="p-3 rounded-lg bg-blue-50 border border-blue-200 mb-4">
+        <p className="text-sm font-semibold text-blue-700 mb-1">
+          📣 Message Sent to Student
+        </p>
+        <p className="text-sm text-slate-700 whitespace-pre-wrap">
+          {issue.admin_message}
+        </p>
+      </div>
+    )}
+
+    <p className="text-sm text-slate-500 italic">
+      This issue is closed and cannot be updated.
+    </p>
+  </>
 )}
 
         <div className="flex justify-end gap-3 mt-6">
