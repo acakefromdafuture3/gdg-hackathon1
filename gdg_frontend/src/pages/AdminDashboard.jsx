@@ -454,7 +454,7 @@ function IssueModal({ issue, allIssues, onClose, setIssues }) {
     <IssueAI issue={issue} allIssues={allIssues} />
   </>
 )}
-
+  <hr/>
         <div className="text-sm space-y-1">
           <h3 className="font-semibold mb-1">Reported By</h3>
           <p>Name: {issue.reporter?.name || "—"}</p>
