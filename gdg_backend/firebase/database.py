@@ -179,3 +179,17 @@ def finalize_issue(issue_id, final_status, admin_note=None, admin_message=None):
         update_data["rejected_at"] = datetime.utcnow()
 
     issue_ref.update(update_data)
+def get_student_email_by_issue(issue_id):
+    issue_doc = db.collection("issues").document(issue_id).get()
+    if not issue_doc.exists:
+        return None
+
+    user_id = issue_doc.to_dict().get("created_by")
+    if not user_id:
+        return None
+
+    user_doc = db.collection("users").document(user_id).get()
+    if not user_doc.exists:
+        return None
+
+    return user_doc.to_dict().get("email")
