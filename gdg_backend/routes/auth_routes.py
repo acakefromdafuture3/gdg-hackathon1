@@ -13,8 +13,6 @@ FIREBASE_API_KEY = "AIzaSyAn7RDBHo1XJdTte0U2u0rAEbNm0lWhx6Y"
 def register():
     data = request.json
 
-    if not data["email"].endswith("@stcet.ac.in"):
-        return jsonify({"error": "Invalid college email"}), 400
 
     try:
         user = auth.create_user(
