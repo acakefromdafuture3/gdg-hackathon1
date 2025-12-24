@@ -92,6 +92,7 @@ const resolvedIssues = processedIssues.filter(
   const pending = issues.filter(i => i.status === "Pending").length;
   const inProgress = issues.filter(i => i.status === "In Progress").length;
   const resolved = issues.filter(i => i.status === "Resolved").length;
+  const rejected = issues.filter(i => i.status === "Rejected").length;
 
   if (loading) return <p className="text-center mt-10">Loading...</p>;
   if (error) return <p className="text-center text-red-600 mt-10">{error}</p>;
@@ -112,7 +113,7 @@ const resolvedIssues = processedIssues.filter(
         <StatCard title="Total Issues" value={total} />
         <StatCard title="Pending" value={pending} color="text-yellow-600" />
         <StatCard title="In Progress" value={inProgress} color="text-blue-600" />
-        <StatCard title="Resolved" value={resolved} color="text-green-600" />
+        <StatCard title="Closed" value={resolved + rejected} color="text-green-600" />
       </div>
 
       {/* Search */}
@@ -236,7 +237,7 @@ const resolvedIssues = processedIssues.filter(
     className="w-full flex items-center justify-between px-6 py-4 font-semibold text-slate-700 hover:bg-slate-50"
   >
     <span>
-      Resolved Issues ({resolvedIssues.length})
+      Closed Issues ({resolvedIssues.length})
     </span>
     <span className="text-sm text-slate-500">
       {showResolved ? "Hide" : "Show"}
@@ -447,9 +448,12 @@ function IssueModal({ issue, allIssues, onClose, setIssues }) {
           </p>
         </div>
 
-        <hr className="my-4" />
-        <IssueAI issue={issue} allIssues={allIssues} />
-        <hr className="my-4" />
+       {!isClosed && (
+  <>
+    <hr className="my-4" />
+    <IssueAI issue={issue} allIssues={allIssues} />
+  </>
+)}
 
         <div className="text-sm space-y-1">
           <h3 className="font-semibold mb-1">Reported By</h3>
