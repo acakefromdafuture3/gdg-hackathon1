@@ -74,6 +74,7 @@ This leads to:
   - Backend: Render
 
 ---
+## 💻 Workflow
 ``` mermaid
 flowchart TD
     A[Student Registers / Logs In]
