@@ -2,6 +2,11 @@ import { Link } from "react-router-dom";
 import { FiArrowLeft, FiTool } from "react-icons/fi";
 
 export default function NotReady() {
+  const role = localStorage.getItem("role");
+
+  const dashboardPath =
+    role === "admin" ? "/admin" : "/student/dashboard";
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-slate-100 px-4 text-center">
       <FiTool className="text-5xl text-slate-400 mb-4" />
@@ -15,7 +20,7 @@ export default function NotReady() {
       </p>
 
       <Link
-        to="/student/dashboard"
+        to={dashboardPath}
         className="mt-6 inline-flex items-center gap-2 text-blue-600 hover:underline font-medium"
       >
         <FiArrowLeft />
