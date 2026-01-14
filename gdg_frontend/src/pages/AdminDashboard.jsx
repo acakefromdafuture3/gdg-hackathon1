@@ -94,19 +94,32 @@ const resolvedIssues = processedIssues.filter(
   const resolved = issues.filter(i => i.status === "Resolved").length;
   const rejected = issues.filter(i => i.status === "Rejected").length;
 
-  if (loading) return <p className="text-center mt-10">Loading...</p>;
+  if (loading)
+  return (
+    <p className="text-center mt-20 text-slate-500 animate-pulse">
+      Loading issues…
+    </p>
+  );
   if (error) return <p className="text-center text-red-600 mt-10">{error}</p>;
 
   return (
     <div className="space-y-8">
 
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-slate-800">Admin Dashboard</h1>
-        <p className="text-slate-600 mt-1">
-          Monitor and manage all reported campus issues
-        </p>
-      </div>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+  <div>
+    <h1 className="text-3xl font-bold text-slate-800 tracking-tight">
+      Admin Dashboard
+    </h1>
+    <p className="text-slate-600 mt-1">
+      Command center for all campus issues
+    </p>
+  </div>
+
+  <div className="text-sm text-slate-500">
+    {activeIssues.length} active • {resolvedIssues.length} closed
+  </div>
+</div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
@@ -117,6 +130,7 @@ const resolvedIssues = processedIssues.filter(
       </div>
 
       {/* Search */}
+      <hr className="border-slate-200" />
       <input
         type="text"
         placeholder="Search by title or reporter..."
@@ -178,13 +192,23 @@ const resolvedIssues = processedIssues.filter(
           </thead>
 
           <tbody>
+            {activeIssues.length === 0 && (
+  <tr>
+    <td
+      colSpan={5}
+      className="px-6 py-10 text-center text-slate-500"
+    >
+      No active issues at the moment
+    </td>
+  </tr>
+)}
             {activeIssues.map((issue, index) => (
               <tr
   key={issue.id}
   className={`
     border-t
     transition-colors
-    hover:bg-blue-50
+    hover:bg-blue-50 cursor-pointer
     ${index % 2 === 0 ? "bg-white" : "bg-slate-50"}
     ${
       issue.severity === "High"
@@ -240,7 +264,7 @@ const resolvedIssues = processedIssues.filter(
       Closed Issues ({resolvedIssues.length})
     </span>
     <span className="text-sm text-slate-500">
-      {showResolved ? "Hide" : "Show"}
+      {showResolved ? "Collapse" : "Expand"}
     </span>
   </button>
 
@@ -318,7 +342,9 @@ const resolvedIssues = processedIssues.filter(
 
 function StatCard({ title, value, color = "text-slate-800" }) {
   return (
-    <div className="bg-white rounded-xl shadow p-5">
+    <div className="bg-white rounded-xl shadow-sm p-5
+  hover:shadow-md hover:-translate-y-0.5
+  transition-all duration-200">
       <p className="text-sm text-slate-500">{title}</p>
       <p className={`text-3xl font-bold mt-2 ${color}`}>{value}</p>
     </div>
@@ -478,7 +504,7 @@ const handleUpdate = async () => {
         </div>
 
         <hr className="my-4" />
-
+        <hr className="my-6 border-dashed" />
     {!isClosed ? (
   <div className="space-y-4">
     <h3 className="font-semibold">Update Status</h3>
