@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import api from "../api/api";
-
+import { FiAlertCircle, FiClock, FiCheckCircle } from "react-icons/fi";
 export default function StudentDashboard() {
   const [myIssues, setMyIssues] = useState([]);
   const [recentIssues, setRecentIssues] = useState([]);
@@ -116,16 +116,18 @@ export default function StudentDashboard() {
 
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <StatCard title="Total Issues" value={stats.total} />
-          <StatCard title="Pending" value={stats.pending} color="text-yellow-600" />
-          <StatCard title="Resolved" value={stats.resolved} color="text-green-600" />
+          <StatCard title="Total Issues" value={stats.total} type="total" />
+          <StatCard title="Pending" value={stats.pending} type="pending" />
+          <StatCard title="Resolved" value={stats.resolved} type="resolved" />
         </div>
 
         {/* Action Button */}
         <Link
-          to="/student/report"
-          className="inline-block bg-blue-600 text-white px-5 py-2 rounded-lg font-medium hover:bg-blue-700 transition"
-        >
+  to="/student/report"
+  className="inline-block bg-gradient-to-r from-blue-600 to-indigo-600
+  text-white px-6 py-2 rounded-lg font-medium shadow
+  hover:shadow-lg hover:scale-[1.02] transition"
+>
           + Report New Issue
         </Link>
 
@@ -145,7 +147,9 @@ export default function StudentDashboard() {
                 <button
                   key={issue.id}
                   onClick={() => openIssueModal(issue.id)}
-                  className="w-full text-left flex items-center justify-between border border-slate-200 rounded-lg px-4 py-3 hover:bg-slate-50 transition"
+                  className="w-full text-left flex items-center justify-between
+border border-slate-200 rounded-lg px-4 py-3 bg-white
+hover:bg-blue-50 hover:shadow-sm transition"
                 >
                   <div>
                     <p className="font-medium text-slate-800">{issue.title}</p>
@@ -267,11 +271,38 @@ export default function StudentDashboard() {
    REUSABLE COMPONENTS
 ========================= */
 
-function StatCard({ title, value, color = "text-slate-800" }) {
+function StatCard({ title, value, type }) {
+  const styles = {
+    total: {
+      icon: <FiAlertCircle />,
+      bg: "bg-blue-50",
+      text: "text-blue-700",
+    },
+    pending: {
+      icon: <FiClock />,
+      bg: "bg-yellow-50",
+      text: "text-yellow-700",
+    },
+    resolved: {
+      icon: <FiCheckCircle />,
+      bg: "bg-green-50",
+      text: "text-green-700",
+    },
+  };
+
+  const { icon, bg, text } = styles[type];
+
   return (
-    <div className="bg-white rounded-xl shadow p-5">
-      <p className="text-sm text-slate-500">{title}</p>
-      <p className={`text-3xl font-bold mt-2 ${color}`}>
+    <div
+      className={`rounded-xl p-5 shadow-sm hover:shadow-md transition
+      transform hover:-translate-y-1 ${bg}`}
+    >
+      <div className="flex items-center gap-3">
+        <div className={`text-xl ${text}`}>{icon}</div>
+        <p className="text-sm text-slate-600">{title}</p>
+      </div>
+
+      <p className={`text-3xl font-bold mt-2 ${text}`}>
         {value}
       </p>
     </div>
