@@ -10,6 +10,7 @@ import ProtectedRoute from "./components/ProtectedRoutes";
 import StudentLayout from "./Layouts/StudentLayout";
 import AdminLayout from "./Layouts/AdminLayout";
 import ReportIssue from "./pages/ReportIssue";
+import NotReady from "./pages/NotReady";
 
 function App() {
   return (
@@ -28,8 +29,11 @@ function App() {
             </ProtectedRoute>
           }
         >
-          <Route path="report" element={<ReportIssue />} />
           <Route index element={<StudentDashboard />} />
+          <Route path="dashboard" element={<StudentDashboard />} />
+          <Route path="report" element={<ReportIssue />} />
+          <Route path="profile" element={<NotReady />} />
+          <Route path="*" element={<NotReady />} />
         </Route>
 
         {/* -------- ADMIN ROUTES -------- */}
@@ -42,6 +46,7 @@ function App() {
           }
         >
           <Route index element={<AdminDashboard />} />
+          <Route path="*" element={<NotReady />} />
         </Route>
       </Routes>
     </BrowserRouter>
