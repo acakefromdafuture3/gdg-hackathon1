@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
 import api from "../api/api";
 import IssueAI from "../components/IssueAI"
+import {
+  FiClipboard,
+  FiClock,
+  FiActivity,
+  FiCheckCircle,
+} from "react-icons/fi";
+
 const formatDate = (ts) => {
   if (!ts) return "";
   const date = ts.seconds
@@ -123,10 +130,37 @@ const resolvedIssues = processedIssues.filter(
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <StatCard title="Total Issues" value={total} />
-        <StatCard title="Pending" value={pending} color="text-yellow-600" />
-        <StatCard title="In Progress" value={inProgress} color="text-blue-600" />
-        <StatCard title="Closed" value={resolved + rejected} color="text-green-600" />
+        <StatCard
+  title="Total Issues"
+  value={total}
+  icon={FiClipboard}
+  color="text-slate-800"
+  bg="bg-white"
+/>
+
+<StatCard
+  title="Pending"
+  value={pending}
+  icon={FiClock}
+  color="text-yellow-600"
+  bg="bg-yellow-50"
+/>
+
+<StatCard
+  title="In Progress"
+  value={inProgress}
+  icon={FiActivity}
+  color="text-blue-600"
+  bg="bg-blue-50"
+/>
+
+<StatCard
+  title="Closed"
+  value={resolved + rejected}
+  icon={FiCheckCircle}
+  color="text-green-600"
+  bg="bg-green-50"
+/>
       </div>
 
       {/* Search */}
@@ -340,13 +374,28 @@ const resolvedIssues = processedIssues.filter(
 
 /* ---------------- Components ---------------- */
 
-function StatCard({ title, value, color = "text-slate-800" }) {
+function StatCard({ title, value, icon: Icon, color, bg }) {
   return (
-    <div className="bg-white rounded-xl shadow-sm p-5
-  hover:shadow-md hover:-translate-y-0.5
-  transition-all duration-200">
-      <p className="text-sm text-slate-500">{title}</p>
-      <p className={`text-3xl font-bold mt-2 ${color}`}>{value}</p>
+    <div
+      className={`rounded-xl p-5 shadow-sm
+        hover:shadow-md hover:-translate-y-0.5
+        transition-all duration-200 ${bg}`}
+    >
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm text-slate-600">{title}</p>
+          <p className={`text-3xl font-bold mt-2 ${color}`}>
+            {value}
+          </p>
+        </div>
+
+        <div
+          className={`w-10 h-10 rounded-full flex items-center justify-center
+            ${color.replace("text-", "bg-")}/15`}
+        >
+          <Icon className={`${color}`} size={20} />
+        </div>
+      </div>
     </div>
   );
 }
