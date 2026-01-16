@@ -11,6 +11,8 @@ import StudentLayout from "./Layouts/StudentLayout";
 import AdminLayout from "./Layouts/AdminLayout";
 import ReportIssue from "./pages/ReportIssue";
 import NotReady from "./pages/NotReady";
+import StudentProfile from "./pages/StudentProfile";
+import AdminProfile from "./pages/AdminProfile";
 
 function App() {
   return (
@@ -32,7 +34,7 @@ function App() {
           <Route index element={<StudentDashboard />} />
           <Route path="dashboard" element={<StudentDashboard />} />
           <Route path="report" element={<ReportIssue />} />
-          <Route path="profile" element={<NotReady />} />
+          <Route path="profile" element={<StudentProfile />} />
           <Route path="*" element={<NotReady />} />
         </Route>
 
@@ -46,7 +48,7 @@ function App() {
           }
         >
           <Route index element={<AdminDashboard />} />
-          <Route path="*" element={<NotReady />} />
+          <Route path="*" element={<AdminProfile />} />
         </Route>
       </Routes>
     </BrowserRouter>
